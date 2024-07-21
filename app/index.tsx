@@ -8,7 +8,7 @@ import {
 import { TextInput } from "react-native-paper";
 import tw from "@/lib/tailwind";
 import { fbDB } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { debounce } from "lodash";
 
 export default function Index() {
@@ -24,6 +24,25 @@ export default function Index() {
       inputRef.current.focus();
     }
   }, [inputRef]);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const docRef = doc(fbDB, "notes", "tab1");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.content) {
+            setQuery(data.content.replace(/\\n/g, "\n"));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch notes:", error);
+      }
+    };
+
+    fetchNotes();
+  }, []);
 
   useEffect(() => {
     if (pendingUpdate !== undefined) {
