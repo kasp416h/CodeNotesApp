@@ -39,7 +39,8 @@
         {
           "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID."
         }
-      ]
+      ],
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true
@@ -51,6 +52,12 @@
       "eas": {
         "projectId": "fe7c9566-4ad8-4eb1-9b1a-843307014a4a"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/fe7c9566-4ad8-4eb1-9b1a-843307014a4a"
     }
   }
 }
