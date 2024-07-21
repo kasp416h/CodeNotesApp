@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   TouchableWithoutFeedback,
@@ -7,9 +7,15 @@ import {
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import tw from "@/lib/tailwind";
+import { fbDB } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { debounce } from "lodash";
 
 export default function Index() {
   const [query, setQuery] = useState<string>("");
+  const [pendingUpdate, setPendingUpdate] = useState<string | undefined>(
+    undefined
+  );
 
   const inputRef = useRef<RNTextInput | null>(null);
 
@@ -18,6 +24,33 @@ export default function Index() {
       inputRef.current.focus();
     }
   }, [inputRef]);
+
+  useEffect(() => {
+    if (pendingUpdate !== undefined) {
+      debouncedSaveContent(pendingUpdate);
+      setPendingUpdate(undefined);
+    }
+  }, [pendingUpdate]);
+
+  function handleOnChangeText(text: string): void {
+    setQuery(text);
+    setPendingUpdate(text);
+  }
+
+  const debouncedSaveContent = useCallback(
+    debounce(async (text: string) => {
+      try {
+        const docRef = doc(fbDB, "notes", "tab1");
+        await setDoc(docRef, {
+          content: text.replace(/\n/g, "\\n"),
+          timestamp: new Date(),
+        });
+      } catch (error: any) {
+        console.error(error);
+      }
+    }, 1000),
+    []
+  );
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -36,7 +69,7 @@ export default function Index() {
           label="..."
           value={query}
           multiline
-          onChangeText={(text) => setQuery(text)}
+          onChangeText={handleOnChangeText}
           keyboardAppearance={tw.color("dark-name")}
         />
       </View>
